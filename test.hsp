@@ -1,0 +1,6 @@
+#include "modtest.as"
+
+setVar 10
+hoge = 50
+var = getVar(1)
+print var

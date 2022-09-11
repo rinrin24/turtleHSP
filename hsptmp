@@ -1,0 +1,5 @@
+#include "turtle.as"
+
+assert
+initializeTurtle
+print "hoge"

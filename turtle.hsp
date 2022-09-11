@@ -1,0 +1,7 @@
+//#include "hspmath.as"
+#include "turtle.as"
+
+await 1000
+goto 100.0, 100.0
+;stop
+home
