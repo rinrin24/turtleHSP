@@ -1,7 +1,27 @@
 //#include "hspmath.as"
 #include "turtle.as"
 
-await 1000
-goto 100.0, 100.0
-;stop
-home
+/*
+forward 100
+left 120
+pencolor $ff0000
+forward 200
+left 120
+pencolor $00ff00
+forward 200
+left 120
+forward 100
+*/
+
+pencolor red
+//begin_fill()
+while true
+	forward 200
+	left 170
+	logmes "x:" + positionX()
+	logmes "y:" + positionY()
+	if(absf(positionX) < 1.0) : _break
+	if(absf(positionY) < 1.0) : _break
+wend
+//end_fill()
+//done()
