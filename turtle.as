@@ -15,13 +15,14 @@
 #define slow 3
 #define slowest 1
 
-#const DEFAULT_WAIT 20
-#const DEFAULT_TURTLE_SPEED 3
+#const DEFAULT_WAIT 10;20
+#const DEFAULT_TURTLE_SPEED 10
 #const TURTLE_PICTURE_SIZEX 50
 #const TURTLE_PICTURE_SIZEY 50
 #const BUFFER_WINDOWID 1
 #const TURTLE_PICTURE_WINDOWID 2
 #const ROTATE_MIN_UNIT 1	//degree
+#const MAX_STAMPS 100
 
 #undef goto
 
@@ -34,6 +35,7 @@ penIsDown: ペンが降りてればtrue, ペンが上がっていればfalse
 turtleIsVisible: 亀が可視か
 penColorCode: penの描画色(16進RGB)
 backgroundColor: 背景色
+turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Yを指定(0- X, 1- Y)
 
 mainScreen: 描画先ウィンドウのウィンドウID
 
@@ -71,9 +73,9 @@ buffer 1: 亀以外の描画
 	rgbcolor penColorCode
 
 	line x1_ + ginfo_winx / 2, y1_ + ginfo_winy / 2, x2_ + ginfo_winx / 2, y2_ + ginfo_winy / 2
-	logmes "(" + (x1_ + ginfo_winx / 2) + "," + (y1_ + ginfo_winy / 2) + "), (" + (x2_ + ginfo_winx / 2) + "," + (y2_ + ginfo_winy / 2)
+	;logmes "(" + (x1_ + ginfo_winx / 2) + "," + (y1_ + ginfo_winy / 2) + "), (" + (x2_ + ginfo_winx / 2) + "," + (y2_ + ginfo_winy / 2)
 	//logmes "x: " + turtlePositionX + "y: " + turtlePositionY
-	logmes "x: " + int((turtlePositionX - TURTLE_PICTURE_SIZEX@ / 2) + ginfo_winx / 2) + ", y: " + int((turtlePositionY - TURTLE_PICTURE_SIZEY@ / 2) + ginfo_winy / 2)
+	;logmes "x: " + int((turtlePositionX - TURTLE_PICTURE_SIZEX@ / 2) + ginfo_winx / 2) + ", y: " + int((turtlePositionY - TURTLE_PICTURE_SIZEY@ / 2) + ginfo_winy / 2)
 	gsel mainScreen, 1
 	rgbcolor preColor
 	return
@@ -95,6 +97,8 @@ buffer 1: 亀以外の描画
 			turtleHeading -= ROTATE_MIN_UNIT@; * cnt
 			if(turtleHeading < toAngle_) : turtleHeading = toAngle_
 		}
+		if(absf(turtleHeading) >= 360) : turtleHeading = turtleHeading \ 360
+		if(turtleHeading < 0) : turtleHeading = 360 + turtleHeading
 		_drawAll@turtle
 		redraw 1
 		;logmes cnt
@@ -145,6 +149,13 @@ buffer 1: 亀以外の描画
 #deffunc back double distance_
 	backward distance_
 	return
+#deffunc clear
+	gsel BUFFER_WINDOWID@, 1
+	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
+	rgbcolor backgroundColor: boxf
+	rgbcolor preColor
+	_drawAll@turtle
+	return
 #deffunc fd double distance_
 	forward distance_
 	return
@@ -154,16 +165,15 @@ buffer 1: 亀以外の描画
 	_moveToNewPosition newPositionX, newPositionY
 	return
 #deffunc goto double x_, double y_
-	logmes x_ - turtlePositionX
-	logmes y_ - turtlePositionY
-
-	logmes turtleHeading
-	logmes rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))) - turtleHeading
-	logmes rad2deg(atan(y_, x_))
-	_rotateTurtle rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))) - turtleHeading
-	//await 1000
-	//_rotateTurtle rad2deg(atan(y_, x_))
+	setheading rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
 	_moveToNewPosition@turtle double(x_), double(y_)
+	return
+#deffunc hideturtle
+	turtleIsVisible = false@
+	_drawAll@turtle
+	return
+#deffunc ht
+	hideturtle
 	return
 #deffunc home
 	goto 0.0, 0.0
@@ -186,9 +196,10 @@ buffer 1: 亀以外の描画
 	penColorCode = black@
 	backgroundColor = white@
 	_drawAll@turtle
+	dim turtleStamps, MAX_STAMPS@, 2
 	return
 #deffunc left double angle_
-	_rotateTurtle@turtle angle_
+	_rotateTurtle@turtle -angle_
 	return
 #deffunc lt double angle_
 	left angle_
@@ -203,23 +214,61 @@ buffer 1: 亀以外の描画
 	penisdown = false@
 	return
 #deffunc right double angle_
-	_rotateTurtle@turtle -angle_
+	_rotateTurtle@turtle angle_
+	return
+#deffunc reset
+	gsel BUFFER_WINDOWID@, 1
+	cls
+	gsel TURTLE_PICTURE_WINDOWID@
+	pictureSizeX = ginfo_winx
+	pictureSizeY = ginfo_winy
+	gsel mainScreen, 1
+	turtlePositionX = 0
+	turtlePositionY = 0
+	turtleHeading = 0
+	turtleSpeed = DEFAULT_TURTLE_SPEED@
+	penIsDown = true@
+	turtleIsVisible = true@
+	penColorCode = black@
+	backgroundColor = white@
+	_drawAll@turtle
+	dim turtleStamps, MAX_STAMPS@, 2
 	return
 #deffunc rt double angle_
 	right angle_
 	return
 #deffunc setheading double to_angle_
-	turtleHeading = to_angle_
+	if((absf(to_angle_ - turtleHeading)) <= 180) : _rotateTurtle to_angle_ : return
+	_rotateTurtle -to_angle_
 	return
-#deffunc seth double to_angle_
+#deffunc seth double 
 	setheading to_angle_
 	return
 #deffunc setpos double x_, double y_
 	goto x_, y_
 	return
+#deffunc setx double x_
+	goto x_, turtlePositionY
+	return
+#deffunc sety double y_
+	goto turtlePositionX, y_
+	return
 #deffunc setposition double x_, double y_
 	goto x_, y_
 	return
+#deffunc showturtle
+	turtleIsVisible = true@
+	_drawAll@turtle
+	return
+#deffunc st
+	showturtle
+	return
+#deffunc speed double speed_
+	turtleSpeed = speed_
+	return
+/*---------------以下戻り値ありの関数---------------*/
+#defcfunc isvisible
+	return turtleIsVisible
 #defcfunc positionX
 	return double(turtlePositionX)
 #defcfunc positionY

@@ -1,6 +1,18 @@
 //#include "hspmath.as"
 #include "turtle.as"
 
+#module
+#deffunc fractal double size, int depth
+	if depth <= 0{
+		forward(size)                          ;直線
+	}else{
+		fractal double(size/3), depth-1 : left 60     ;1/3の長さでフラクタル描画、左に60度向く
+		fractal double(size/3), depth-1 : left -120   ;1/3の長さでフラクタル描画、右に120度向く
+		fractal double(size/3), depth-1 : left 60     ;1/3の長さでフラクタル描画、左に60度向く
+		fractal double(size/3), depth-1             	  ;1/3の長さでフラクタル描画
+	}
+	return
+#global
 /*
 forward 100
 left 120
@@ -12,16 +24,30 @@ forward 200
 left 120
 forward 100
 */
-
+/*
+penup
+goto -250, 0
+right 180
+pendown
 pencolor red
-//begin_fill()
-while true
-	forward 200
+repeat 36
+	forward 500
 	left 170
-	logmes "x:" + positionX()
-	logmes "y:" + positionY()
-	if(absf(positionX) < 1.0) : _break
-	if(absf(positionY) < 1.0) : _break
-wend
-//end_fill()
-//done()
+loop
+penup
+goto 250, 0
+pendown
+//stop
+repeat 36 + 1
+	goto cos(deg2rad(10 * cnt)) * 250, sin(deg2rad(10 * cnt)) * 250
+loop
+*/
+;fractal 300, 4
+penup
+goto -100, 0
+;clear
+pendown
+repeat 12345
+	fractal 200, 3
+	left 360/5
+loop
