@@ -1,5 +1,6 @@
 //#include "hspmath.as"
 #include "turtle.as"
+#include "hspda.as"
 
 #module
 #deffunc fractal double size, int depth
@@ -43,11 +44,14 @@ repeat 36 + 1
 loop
 */
 ;fractal 300, 4
-penup
-goto -100, 0
-;clear
+;penup
+
+goto 0, 200
+goto -100, 200
+clear
+left 180
 pendown
-repeat 12345
-	fractal 200, 3
+repeat 5
+	fractal 300,3
 	left 360/5
 loop

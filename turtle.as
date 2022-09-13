@@ -23,6 +23,7 @@
 #const TURTLE_PICTURE_WINDOWID 2
 #const ROTATE_MIN_UNIT 1	//degree
 #const MAX_STAMPS 100
+#const DEFAULT_PENSIZE 4
 
 #undef goto
 
@@ -35,7 +36,9 @@ penIsDown: ペンが降りてればtrue, ペンが上がっていればfalse
 turtleIsVisible: 亀が可視か
 penColorCode: penの描画色(16進RGB)
 backgroundColor: 背景色
-turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Yを指定(0- X, 1- Y)
+turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Y、色を指定(0- X, 1- Y, 2- 16進カラーコード)
+turtleStampNumber: 現在存在しているスタンプの数
+turtlePenSize: ペンのサイズ(px)
 
 mainScreen: 描画先ウィンドウのウィンドウID
 
@@ -46,12 +49,21 @@ buffer 1: 亀以外の描画
 #deffunc local _drawAll
 	rgbcolor bgcolor : boxf
 	_drawShape@turtle
+	_drawStamps@turtle
 	_drawTurtle@turtle
 	return
 #deffunc local _drawShape
 	gmode 0
 	pos 0, 0
 	gcopy 1, 0, 0, ginfo_winx, ginfo_winy
+	return
+#deffunc local _drawStamps
+	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
+	repeat turtleStampNumber
+		pos turtleStamps(cnt, 0), turtleStamps(cnt, 1)
+		rgbcolor turtleStamps(cnt, 2)
+		
+	loop
 	return
 #deffunc local _drawTurtle
 	;logmes "drawwwww"
@@ -152,8 +164,21 @@ buffer 1: 亀以外の描画
 #deffunc clear
 	gsel BUFFER_WINDOWID@, 1
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
-	rgbcolor backgroundColor: boxf
+	rgbcolor backgroundColor : boxf
 	rgbcolor preColor
+	gsel mainScreen, 1
+	_drawAll@turtle
+	return
+#deffunc down
+	pendown
+	return
+#deffunc dot
+	gsel BUFFER_WINDOWID@, 1
+	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
+	rgbcolor penColorCode
+	circle turtlePositionX - turtlePenSize / 2 + ginfo_winx / 2, turtlePositionY - turtlePenSize / 2 + ginfo_winy / 2, turtlePositionX + turtlePenSize / 2 + ginfo_winx / 2, turtlePositionY + turtlePenSize / 2 + ginfo_winy / 2, 1
+	rgbcolor preColor
+	gsel mainScreen, 1
 	_drawAll@turtle
 	return
 #deffunc fd double distance_
@@ -166,6 +191,8 @@ buffer 1: 亀以外の描画
 	return
 #deffunc goto double x_, double y_
 	setheading rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
+	;logmes rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
+	;logmes turtleHeading
 	_moveToNewPosition@turtle double(x_), double(y_)
 	return
 #deffunc hideturtle
@@ -195,6 +222,8 @@ buffer 1: 亀以外の描画
 	turtleIsVisible = true@
 	penColorCode = black@
 	backgroundColor = white@
+	turtlePenSize = DEFAULT_PENSIZE@
+	turtleStampNumber = 0
 	_drawAll@turtle
 	dim turtleStamps, MAX_STAMPS@, 2
 	return
@@ -207,11 +236,20 @@ buffer 1: 亀以外の描画
 #deffunc pencolor int colorCode_
 	penColorCode = colorCode_
 	return
+#deffunc pd
+	pendown
+	return
 #deffunc pendown
 	penisdown = true@
 	return
+#deffunc pensize double width_
+	turtlePenSize = width_
+	return
 #deffunc penup
 	penisdown = false@
+	return
+#deffunc pu
+	penup
 	return
 #deffunc right double angle_
 	_rotateTurtle@turtle angle_
@@ -238,8 +276,9 @@ buffer 1: 亀以外の描画
 	right angle_
 	return
 #deffunc setheading double to_angle_
-	if((absf(to_angle_ - turtleHeading)) <= 180) : _rotateTurtle to_angle_ : return
-	_rotateTurtle -to_angle_
+	logmes to_angle_
+	if((absf(to_angle_ - turtleHeading)) <= 180) : _rotateTurtle to_angle_ - turtleHeading : return
+	_rotateTurtle -to_angle_ + turtleHeading
 	return
 #deffunc seth double 
 	setheading to_angle_
@@ -260,19 +299,45 @@ buffer 1: 亀以外の描画
 	turtleIsVisible = true@
 	_drawAll@turtle
 	return
-#deffunc st
-	showturtle
-	return
 #deffunc speed double speed_
 	turtleSpeed = speed_
 	return
+#deffunc st
+	showturtle
+	return
+#deffunc stamp
+	turtleStamps(turtleStampNumber, 0) = turtlePositionX
+	turtleStamps(turtleStampNumber, 1) = turtlePositionY
+	turtleStamps(turtleStampNumber, 2) = pencolor
+	_drawAll@turtle
+	return
+#deffunc up
+	penup
+	return
+#deffunc width double width_
+	pensize width_
+	return
 /*---------------以下戻り値ありの関数---------------*/
+#defcfunc distance double x_, double y_
+	return sqrt(powf(x_ - turtlePositionX, 2) + powf(y_ - turtlePositionY, 2))
+#defcfunc heading
+	return turtleHeading
 #defcfunc isvisible
 	return turtleIsVisible
 #defcfunc positionX
 	return double(turtlePositionX)
 #defcfunc positionY
 	return double(turtlePositionY)
+#defcfunc posX
+	return positionX
+#defcfunc posY
+	return positionY
+#defcfunc towards double x_, double y_
+	return rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
+#defcfunc xcor
+	return positionX
+#defcfunc ycor
+	return positionY
 /*
 #deffunc bgcolor int colorCode_
 	return
