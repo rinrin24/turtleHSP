@@ -21,11 +21,13 @@
 #const TURTLE_PICTURE_SIZEY 50
 #const BUFFER_WINDOWID 1
 #const TURTLE_PICTURE_WINDOWID 2
+#const TURTLE_OTHERCOLOR_PICTURE_WINDOWID 3
 #const ROTATE_MIN_UNIT 1	//degree
 #const MAX_STAMPS 100
 #const DEFAULT_PENSIZE 4
 
 #undef goto
+#undef width
 
 /*ローカル変数
 turtlePositionX: 亀のX座標
@@ -36,7 +38,7 @@ penIsDown: ペンが降りてればtrue, ペンが上がっていればfalse
 turtleIsVisible: 亀が可視か
 penColorCode: penの描画色(16進RGB)
 backgroundColor: 背景色
-turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Y、色を指定(0- X, 1- Y, 2- 16進カラーコード)
+turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Y、角度、色を指定(0- X, 1- Y, 2- 角度, 3- 16進カラーコード)
 turtleStampNumber: 現在存在しているスタンプの数
 turtlePenSize: ペンのサイズ(px)
 
@@ -60,10 +62,19 @@ buffer 1: 亀以外の描画
 #deffunc local _drawStamps
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	repeat turtleStampNumber
-		pos turtleStamps(cnt, 0), turtleStamps(cnt, 1)
-		rgbcolor turtleStamps(cnt, 2)
-		
+		gsel TURTLE_OTHERCOLOR_PICTURE_WINDOWID@, 1
+		rgbcolor int(turtleStamps(cnt, 3)) : boxf
+		pos 0, 0
+		gmode 2
+		gcopy TURTLE_PICTURE_WINDOWID@, 0, 0, pictureSizeX, pictureSizeY
+		gsel mainScreen, 1
+		pos turtleStamps(cnt, 0) + ginfo_winx / 2, turtleStamps(cnt, 1) + ginfo_winy / 2
+		rgbcolor green@
+		gmode 4, pictureSizeX, pictureSizeY, 255
+		grotate TURTLE_OTHERCOLOR_PICTURE_WINDOWID@, 0, 0, deg2rad(turtleStamps(cnt, 2)), TURTLE_PICTURE_SIZEX@, TURTLE_PICTURE_SIZEY@
 	loop
+	rgbcolor preColor
+	gmode 0
 	return
 #deffunc local _drawTurtle
 	;logmes "drawwwww"
@@ -77,6 +88,7 @@ buffer 1: 亀以外の描画
 	gmode 4, pictureSizeX, pictureSizeY, 255
 	grotate TURTLE_PICTURE_WINDOWID@, 0, 0, deg2rad(turtleHeading), TURTLE_PICTURE_SIZEX@, TURTLE_PICTURE_SIZEY@
 	rgbcolor preColor
+	gmode 0
 	return
 #deffunc local _makeLine int x1_, int y1_, int x2_, int y2_
 	if(penIsDown == false@) : return
@@ -210,6 +222,8 @@ buffer 1: 亀以外の描画
 	mainScreen = ginfo_sel
 	buffer BUFFER_WINDOWID@, ginfo_winx, ginfo_winy
 	celload "turtle.png", TURTLE_PICTURE_WINDOWID@
+	gsel TURTLE_PICTURE_WINDOWID@, 1
+	buffer TURTLE_OTHERCOLOR_PICTURE_WINDOWID@, ginfo_winx, ginfo_winy
 	gsel TURTLE_PICTURE_WINDOWID@
 	pictureSizeX = ginfo_winx
 	pictureSizeY = ginfo_winy
@@ -276,7 +290,7 @@ buffer 1: 亀以外の描画
 	right angle_
 	return
 #deffunc setheading double to_angle_
-	logmes to_angle_
+	;logmes to_angle_
 	if((absf(to_angle_ - turtleHeading)) <= 180) : _rotateTurtle to_angle_ - turtleHeading : return
 	_rotateTurtle -to_angle_ + turtleHeading
 	return
@@ -306,9 +320,11 @@ buffer 1: 亀以外の描画
 	showturtle
 	return
 #deffunc stamp
-	turtleStamps(turtleStampNumber, 0) = turtlePositionX
-	turtleStamps(turtleStampNumber, 1) = turtlePositionY
-	turtleStamps(turtleStampNumber, 2) = pencolor
+	turtleStamps(turtleStampNumber, 0) = int(turtlePositionX)
+	turtleStamps(turtleStampNumber, 1) = int(turtlePositionY)
+	turtleStamps(turtleStampNumber, 2) = (turtleHeading)
+	turtleStamps(turtleStampNumber, 3) = (penColorCode)
+	turtleStampNumber ++
 	_drawAll@turtle
 	return
 #deffunc up

@@ -45,7 +45,7 @@ loop
 */
 ;fractal 300, 4
 ;penup
-
+/*
 goto 0, 200
 goto -100, 200
 clear
@@ -55,3 +55,12 @@ repeat 5
 	fractal 300,3
 	left 360/5
 loop
+*/
+pencolor red@
+stamp
+goto 100, 0
+stamp
+home
+goto -100, 0
+stamp
+goto -200, 0
