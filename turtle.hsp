@@ -1,6 +1,5 @@
 //#include "hspmath.as"
 #include "turtle.as"
-#include "hspda.as"
 
 #module
 #deffunc fractal double size, int depth
@@ -56,6 +55,7 @@ repeat 5
 	left 360/5
 loop
 */
+;	stop
 pencolor red@
 stamp
 goto 100, 0
@@ -64,3 +64,6 @@ home
 goto -100, 0
 stamp
 goto -200, 0
+pensize 5
+goto 0, -200
+logmes "" + heading()

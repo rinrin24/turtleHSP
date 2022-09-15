@@ -24,7 +24,7 @@
 #const TURTLE_OTHERCOLOR_PICTURE_WINDOWID 3
 #const ROTATE_MIN_UNIT 1	//degree
 #const MAX_STAMPS 100
-#const DEFAULT_PENSIZE 4
+#const DEFAULT_PENSIZE 10
 
 #undef goto
 #undef width
@@ -38,7 +38,7 @@ penIsDown: ペンが降りてればtrue, ペンが上がっていればfalse
 turtleIsVisible: 亀が可視か
 penColorCode: penの描画色(16進RGB)
 backgroundColor: 背景色
-turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Y、角度、色を指定(0- X, 1- Y, 2- 角度, 3- 16進カラーコード)
+turtleStamps: スタンプの位置を示す二次元配列、一次元目にスタンプのID、二次元目でスタンプのX、Y、角度、色を指定し、使用可能かを定義(0- X, 1- Y, 2- 角度, 3- 16進カラーコード, 4- 利用可能か)
 turtleStampNumber: 現在存在しているスタンプの数
 turtlePenSize: ペンのサイズ(px)
 
@@ -62,6 +62,7 @@ buffer 1: 亀以外の描画
 #deffunc local _drawStamps
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	repeat turtleStampNumber
+		if(turtleStamps(cnt, 4) == false@) : continue cnt
 		gsel TURTLE_OTHERCOLOR_PICTURE_WINDOWID@, 1
 		rgbcolor int(turtleStamps(cnt, 3)) : boxf
 		pos 0, 0
@@ -95,12 +96,51 @@ buffer 1: 亀以外の描画
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	gsel BUFFER_WINDOWID@, 1
 	rgbcolor penColorCode
-
-	line x1_ + ginfo_winx / 2, y1_ + ginfo_winy / 2, x2_ + ginfo_winx / 2, y2_ + ginfo_winy / 2
+	if(turtlePenSize > 1) {
+		_makeThickLine@turtle x1_ + ginfo_winx / 2, y1_ + ginfo_winy / 2, x2_ + ginfo_winx / 2, y2_ + ginfo_winy / 2
+	}else{
+		line x1_ + ginfo_winx / 2, y1_ + ginfo_winy / 2, x2_ + ginfo_winx / 2, y2_ + ginfo_winy / 2
+	}
 	;logmes "(" + (x1_ + ginfo_winx / 2) + "," + (y1_ + ginfo_winy / 2) + "), (" + (x2_ + ginfo_winx / 2) + "," + (y2_ + ginfo_winy / 2)
-	//logmes "x: " + turtlePositionX + "y: " + turtlePositionY
+	;logmes "x: " + turtlePositionX + "y: " + turtlePositionY
 	;logmes "x: " + int((turtlePositionX - TURTLE_PICTURE_SIZEX@ / 2) + ginfo_winx / 2) + ", y: " + int((turtlePositionY - TURTLE_PICTURE_SIZEY@ / 2) + ginfo_winy / 2)
 	gsel mainScreen, 1
+	rgbcolor preColor
+	return
+#deffunc local _makeThickLine int x1_, int y1_, int x2_, int y2_
+	thickLineLength = sqrt(powf(x1_ - x2_, 2) + powf(y1_ - y2_, 2))
+	repeat int(thickLineLength)
+		curX = (x1_ * (thickLineLength - cnt) + x2_ * cnt) / thickLineLength
+		curY = (y1_ * (thickLineLength - cnt) + y2_ * cnt) / thickLineLength
+		circle curX - turtlePenSize / 2, curY - turtlePenSize / 2, curX + turtlePenSize / 2, curY + turtlePenSize / 2, 1
+	loop
+	return
+#deffunc local _moveToNewPosition double newPositionX_, double newPositionY_
+	targetPositionX = round@(newPositionX_)
+	targetPositionY = round@(newPositionY_)
+	startPositionX = turtlePositionX
+	startPositionY = turtlePositionY
+	//logmes "tar: " + targetPositionX
+	//logmes targetPositionY
+	//logmes startPositionX
+	//logmes startPositionY
+	lineLength = sqrt(powf(targetPositionX - startPositionX, 2) + powf(targetPositionY - startPositionY, 2))
+	//logmes lineLength
+	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
+	repeat lineLength
+		redraw 0
+		rgbcolor penColorCode
+		;logmes lineLength
+		turtlePositionX = (targetPositionX * cnt + startPositionX  * (lineLength - cnt)) / lineLength
+		turtlePositionY = (targetPositionY * cnt + startPositionY  * (lineLength - cnt)) / lineLength
+		//turtlePositionX = (targetPositionX - startPositionX) * cnt / lineLength
+		//turtlePositionY = (targetPositionY - startPositionY) * cnt / lineLength
+		;logmes "x: " + turtlePositionX + "y: " + turtlePositionY
+		_makeLine@turtle startPositionX, startPositionY, turtlePositionX, turtlePositionY
+		_drawAll@turtle
+		redraw 1
+		_waitTurtle@turtle
+	loop
 	rgbcolor preColor
 	return
 /**
@@ -135,33 +175,6 @@ buffer 1: 亀以外の描画
 	if(turtleSpeed == false@) : return	//turtleSpeedが0の場合はwait無し
 	await DEFAULT_WAIT@ / turtleSpeed
 	return
-#deffunc local _moveToNewPosition double newPositionX_, double newPositionY_
-	targetPositionX = round@(newPositionX_)
-	targetPositionY = round@(newPositionY_)
-	startPositionX = turtlePositionX
-	startPositionY = turtlePositionY
-	//logmes "tar: " + targetPositionX
-	//logmes targetPositionY
-	//logmes startPositionX
-	//logmes startPositionY
-	lineLength = sqrt(powf(targetPositionX - startPositionX, 2) + powf(targetPositionY - startPositionY, 2))
-	//logmes lineLength
-	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
-	repeat lineLength
-		redraw 0
-		rgbcolor penColorCode
-		turtlePositionX = (targetPositionX * cnt + startPositionX  * (lineLength - cnt)) / lineLength
-		turtlePositionY = (targetPositionY * cnt + startPositionY  * (lineLength - cnt)) / lineLength
-		//turtlePositionX = (targetPositionX - startPositionX) * cnt / lineLength
-		//turtlePositionY = (targetPositionY - startPositionY) * cnt / lineLength
-		;logmes "x: " + turtlePositionX + "y: " + turtlePositionY
-		_makeLine@turtle startPositionX, startPositionY, turtlePositionX, turtlePositionY
-		_drawAll@turtle
-		redraw 1
-		_waitTurtle@turtle
-	loop
-	rgbcolor preColor
-	return
 #deffunc backward double distance_
 	newPositionX = cos(deg2rad(180.0 - turtleHeading)) * distance_ + turtlePositionX
 	newPositionY = sin(deg2rad(180.0 - turtleHeading)) * distance_ + turtlePositionY
@@ -179,6 +192,20 @@ buffer 1: 亀以外の描画
 	rgbcolor backgroundColor : boxf
 	rgbcolor preColor
 	gsel mainScreen, 1
+	_drawAll@turtle
+	return
+#deffunc clearstamp int stampId_
+	turtleStamps(stampId_, 0) = 0
+	turtleStamps(stampId_, 1) = 0
+	turtleStamps(stampId_, 2) = 0
+	turtleStamps(stampId_, 3) = 0
+	turtleStamps(stampId_, 4) = false@
+	turtleStampNumber --
+	_drawAll@turtle
+	return
+#deffunc clearstamps
+	dim turtleStamps, MAX_STAMPS@, 5
+	turtleStampNumber = 0
 	_drawAll@turtle
 	return
 #deffunc down
@@ -202,7 +229,8 @@ buffer 1: 亀以外の描画
 	_moveToNewPosition newPositionX, newPositionY
 	return
 #deffunc goto double x_, double y_
-	setheading rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
+	logmes absf(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
+	setheading absf(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
 	;logmes rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
 	;logmes turtleHeading
 	_moveToNewPosition@turtle double(x_), double(y_)
@@ -238,8 +266,8 @@ buffer 1: 亀以外の描画
 	backgroundColor = white@
 	turtlePenSize = DEFAULT_PENSIZE@
 	turtleStampNumber = 0
+	dim turtleStamps, MAX_STAMPS@, 5
 	_drawAll@turtle
-	dim turtleStamps, MAX_STAMPS@, 2
 	return
 #deffunc left double angle_
 	_rotateTurtle@turtle -angle_
@@ -324,6 +352,7 @@ buffer 1: 亀以外の描画
 	turtleStamps(turtleStampNumber, 1) = int(turtlePositionY)
 	turtleStamps(turtleStampNumber, 2) = (turtleHeading)
 	turtleStamps(turtleStampNumber, 3) = (penColorCode)
+	turtleStamps(turtleStampNumber, 4) = true@
 	turtleStampNumber ++
 	_drawAll@turtle
 	return
