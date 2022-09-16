@@ -87,9 +87,21 @@ buffer 1: ‹TˆÈŠO‚Ì•`‰æ
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	rgbcolor green@
 	gmode 4, pictureSizeX, pictureSizeY, 255
-	grotate TURTLE_PICTURE_WINDOWID@, 0, 0, deg2rad(turtleHeading), TURTLE_PICTURE_SIZEX@, TURTLE_PICTURE_SIZEY@
+	;logmes turtleHeading
+	grotate TURTLE_PICTURE_WINDOWID@, 0, 0, -deg2rad(turtleHeading), TURTLE_PICTURE_SIZEX@, TURTLE_PICTURE_SIZEY@
 	rgbcolor preColor
 	gmode 0
+	return
+#deffunc local _makeArc int x_, int y_, int radius_, int startPoint_, int endPoint_
+	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
+	gsel BUFFER_WINDOWID@, 1
+	rgbcolor penColorCode
+	repeat abs(endPoint_ - startPoint_) * 10
+		curAngle = double(startPoint_) + 0.1 * cnt
+		circle x_ + cos(deg2rad(curAngle)) * radius_ - pensize / 2 + ginfo_winx, y_ + sin(deg2rad(curAngle)) * radius_ - pensize / 2 + ginfo_winy, x_ + cos(deg2rad(curAngle)) * radius_ + pensize / 2 + ginfo_winx, y_ + sin(deg2rad(curAngle)) * radius_ + pensize / 2 + ginfo_winy
+	loop
+	gsel mainScreen, 1
+	rgbcolor preColor
 	return
 #deffunc local _makeLine int x1_, int y1_, int x2_, int y2_
 	if(penIsDown == false@) : return
@@ -185,6 +197,26 @@ buffer 1: ‹TˆÈŠO‚Ì•`‰æ
 	return
 #deffunc back double distance_
 	backward distance_
+	return
+#deffunc tcircle double radius_, double extent_
+	circleArcLength = M_PI * radius_ * 2 * extent_ / 360
+	centerX = turtlePositionX - radius_
+	centerY = turtlePositionY
+	setheading 90
+	curAngle = turtleHeading
+	startPositionX = turtlePositionX
+	startPositionY = turtlePositionY
+	repeat circleArcLength
+		redraw 0
+		curAngle += double(cnt) * extent_ / circleArcLength
+		turtlePositionX = centerX + radius_ * cos(curAngle)
+		turtlePositionY = centerY + radius_ * sin(curAngle)
+		turtleHeading = 90 + curAngle
+		_makeArc@turtle centerX, centerY, radius_, 0, curAngle
+		_drawAll@turtle
+		redraw 1
+		_waitTurtle@turtle
+	loop
 	return
 #deffunc clear
 	gsel BUFFER_WINDOWID@, 1
