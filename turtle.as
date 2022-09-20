@@ -48,17 +48,26 @@ buffer 1: 亀以外の描画
 */
 
 #module turtle
+/*
+全てを描画する
+*/
 #deffunc local _drawAll
 	rgbcolor bgcolor : boxf
 	_drawShape@turtle
 	_drawStamps@turtle
 	_drawTurtle@turtle
 	return
+/*
+タートル以外を描画したバッファをメインの画面へコピー
+*/
 #deffunc local _drawShape
 	gmode 0
 	pos 0, 0
 	gcopy 1, 0, 0, ginfo_winx, ginfo_winy
 	return
+/*
+スタンプを全てメインの画面へ描画
+*/
 #deffunc local _drawStamps
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	repeat turtleStampNumber
@@ -77,6 +86,9 @@ buffer 1: 亀以外の描画
 	rgbcolor preColor
 	gmode 0
 	return
+/*
+タートルをメインの画面へ描画
+*/
 #deffunc local _drawTurtle
 	;logmes "drawwwww"
 	if(turtleIsVisible == false@) : return
@@ -92,7 +104,11 @@ buffer 1: 亀以外の描画
 	rgbcolor preColor
 	gmode 0
 	return
-#deffunc local _makeArc int x_, int y_, int radius_, int startPoint_, int endPoint_
+/*
+@param: 中心座標X: int, 中心座標Y: int, 半径: int, 始点角度(度数法): double, 終点角度(度数法): double
+中心座標X, Yを中心とした半径radiusの弧をstartPoint°からendPoint°まで描画
+*/
+#deffunc local _makeArc int x_, int y_, int radius_, double startPoint_, double endPoint_
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	gsel BUFFER_WINDOWID@, 1
 	rgbcolor penColorCode
@@ -103,6 +119,10 @@ buffer 1: 亀以外の描画
 	gsel mainScreen, 1
 	rgbcolor preColor
 	return
+/*
+@param: 始点X座標: int, 始点Y座標: int, 終点X座標: int, 終点Y座標: int
+(始点X座標, 始点Y座標)から(終点X座標, 終点Y座標)まで太さ1の線を描画
+*/
 #deffunc local _makeLine int x1_, int y1_, int x2_, int y2_
 	if(penIsDown == false@) : return
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
@@ -119,6 +139,10 @@ buffer 1: 亀以外の描画
 	gsel mainScreen, 1
 	rgbcolor preColor
 	return
+/*
+@param: 始点X座標: int, 始点Y座標: int, 終点X座標: int, 終点Y座標: int
+(始点X座標, 始点Y座標)から(終点X座標, 終点Y座標)まで太さturtlePenSizeの線を描画
+*/
 #deffunc local _makeThickLine int x1_, int y1_, int x2_, int y2_
 	thickLineLength = sqrt(powf(x1_ - x2_, 2) + powf(y1_ - y2_, 2))
 	repeat int(thickLineLength)
@@ -127,6 +151,12 @@ buffer 1: 亀以外の描画
 		circle curX - turtlePenSize / 2, curY - turtlePenSize / 2, curX + turtlePenSize / 2, curY + turtlePenSize / 2, 1
 	loop
 	return
+/*
+@param: 目標点座標X: double, 目標点座標Y: double
+(目標点座標X, 目標点座標Y)に座標を移動し、亀を描画する
+移動時に移動した場所に線を描画する
+(亀は回転しない)
+*/
 #deffunc local _moveToNewPosition double newPositionX_, double newPositionY_
 	targetPositionX = round@(newPositionX_)
 	targetPositionY = round@(newPositionY_)
@@ -157,7 +187,8 @@ buffer 1: 亀以外の描画
 	return
 /**
 @param 回転する角度:double
-@return void
+回転する角度(度数法)の分だけ回転する
+(回転する角度まで回転するわけではない)
 */
 #deffunc local _rotateTurtle double angle_
 	toAngle_ = turtleHeading + angle_
@@ -183,6 +214,9 @@ buffer 1: 亀以外の描画
 	loop
 	rgbcolor preColor
 	return
+/*
+turtleSpeedの逆数倍のwaitを入れる
+*/
 #deffunc local _waitTurtle
 	if(turtleSpeed == false@) : return	//turtleSpeedが0の場合はwait無し
 	await DEFAULT_WAIT@ / turtleSpeed
@@ -261,8 +295,10 @@ buffer 1: 亀以外の描画
 	_moveToNewPosition newPositionX, newPositionY
 	return
 #deffunc goto double x_, double y_
-	logmes absf(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
-	setheading absf(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
+	to_angle = 	-(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
+	if(to_angle < -180) : to_angle += 360
+	logmes to_angle
+	setheading -(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
 	;logmes rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
 	;logmes turtleHeading
 	_moveToNewPosition@turtle double(x_), double(y_)
@@ -350,9 +386,15 @@ buffer 1: 亀以外の描画
 	right angle_
 	return
 #deffunc setheading double to_angle_
-	;logmes to_angle_
-	if((absf(to_angle_ - turtleHeading)) <= 180) : _rotateTurtle to_angle_ - turtleHeading : return
-	_rotateTurtle -to_angle_ + turtleHeading
+	logmes "a:" + turtleHeading
+	logmes to_angle_
+	rotateAngle = to_angle_ - turtleHeading
+	if(absf(rotateAngle) >= 360) : rotateAngle = rotateAngle \ 360
+	if(rotateAngle < 0) : rotateAngle += 360
+	logmes rotateAngle
+	if((absf(rotateAngle)) <= 180) : _rotateTurtle rotateAngle : return
+	if(rotateAngle > 0) : _rotateTurtle rotateAngle - 360 : return
+	_rotateTurtle rotateAngle + 360
 	return
 #deffunc seth double 
 	setheading to_angle_

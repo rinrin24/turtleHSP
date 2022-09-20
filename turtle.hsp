@@ -4,12 +4,12 @@
 #module
 #deffunc fractal double size, int depth
 	if depth <= 0{
-		forward(size)                          ;ç›´ç·š
+		forward(size)                          ;’¼ü
 	}else{
-		fractal double(size/3), depth-1 : left 60     ;1/3ã®é•·ã•ã§ãƒ•ãƒ©ã‚¯ã‚¿ãƒ«æç”»ã€å·¦ã«60åº¦å‘ã
-		fractal double(size/3), depth-1 : left -120   ;1/3ã®é•·ã•ã§ãƒ•ãƒ©ã‚¯ã‚¿ãƒ«æç”»ã€å³ã«120åº¦å‘ã
-		fractal double(size/3), depth-1 : left 60     ;1/3ã®é•·ã•ã§ãƒ•ãƒ©ã‚¯ã‚¿ãƒ«æç”»ã€å·¦ã«60åº¦å‘ã
-		fractal double(size/3), depth-1             	  ;1/3ã®é•·ã•ã§ãƒ•ãƒ©ã‚¯ã‚¿ãƒ«æç”»
+		fractal double(size/3), depth-1 : left 60     ;1/3‚Ì’·‚³‚Åƒtƒ‰ƒNƒ^ƒ‹•`‰æA¶‚É60“xŒü‚­
+		fractal double(size/3), depth-1 : left -120   ;1/3‚Ì’·‚³‚Åƒtƒ‰ƒNƒ^ƒ‹•`‰æA‰E‚É120“xŒü‚­
+		fractal double(size/3), depth-1 : left 60     ;1/3‚Ì’·‚³‚Åƒtƒ‰ƒNƒ^ƒ‹•`‰æA¶‚É60“xŒü‚­
+		fractal double(size/3), depth-1             	  ;1/3‚Ì’·‚³‚Åƒtƒ‰ƒNƒ^ƒ‹•`‰æ
 	}
 	return
 #global
@@ -46,12 +46,13 @@ loop
 ;penup
 
 goto 0, 200
+
 goto -100, 200
 clear
 left 180
 pendown
 repeat 5
-	fractal 300,3
+	fractal 400, 3
 	left 360/5
 loop
 /**/
