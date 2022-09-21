@@ -191,7 +191,8 @@ buffer 1: ‹TˆÈŠO‚Ì•`‰æ
 (‰ñ“]‚·‚éŠp“x‚Ü‚Å‰ñ“]‚·‚é‚í‚¯‚Å‚Í‚È‚¢)
 */
 #deffunc local _rotateTurtle double angle_
-	toAngle_ = turtleHeading + angle_
+	toAngle_ = double(angle_) + turtleHeading
+	logmes toAngle_
 	moveFrequency = absf(angle_) / ROTATE_MIN_UNIT@
 	if((moveFrequency \ 1) != 0) : moveFrequency++
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
@@ -291,13 +292,13 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 	return
 #deffunc forward double distance_
 	newPositionX = cos(deg2rad(turtleHeading)) * distance_ + turtlePositionX
-	newPositionY = sin(deg2rad(turtleHeading)) * distance_ + turtlePositionY
+	newPositionY = -sin(deg2rad(turtleHeading)) * distance_ + turtlePositionY
 	_moveToNewPosition newPositionX, newPositionY
 	return
 #deffunc goto double x_, double y_
 	to_angle = 	-(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
 	if(to_angle < -180) : to_angle += 360
-	logmes to_angle
+	;logmes to_angle
 	setheading -(rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX))))
 	;logmes rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
 	;logmes turtleHeading
@@ -324,9 +325,9 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 	pictureSizeX = ginfo_winx
 	pictureSizeY = ginfo_winy
 	gsel mainScreen, 1
-	turtlePositionX = 0
-	turtlePositionY = 0
-	turtleHeading = 0
+	turtlePositionX = 0.0
+	turtlePositionY = 0.0
+	turtleHeading = 0.0
 	turtleSpeed = DEFAULT_TURTLE_SPEED@
 	penIsDown = true@
 	turtleIsVisible = true@
@@ -338,7 +339,8 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 	_drawAll@turtle
 	return
 #deffunc left double angle_
-	_rotateTurtle@turtle -angle_
+	_rotateTurtle@turtle angle_
+	;logmes "h:" + turtleHeading
 	return
 #deffunc lt double angle_
 	left angle_
@@ -362,7 +364,7 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 	penup
 	return
 #deffunc right double angle_
-	_rotateTurtle@turtle angle_
+	left -angle_
 	return
 #deffunc reset
 	gsel BUFFER_WINDOWID@, 1
@@ -386,12 +388,12 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 	right angle_
 	return
 #deffunc setheading double to_angle_
-	logmes "a:" + turtleHeading
-	logmes to_angle_
+	;logmes "a:" + turtleHeading
+	;logmes to_angle_
 	rotateAngle = to_angle_ - turtleHeading
 	if(absf(rotateAngle) >= 360) : rotateAngle = rotateAngle \ 360
 	if(rotateAngle < 0) : rotateAngle += 360
-	logmes rotateAngle
+	;logmes rotateAngle
 	if((absf(rotateAngle)) <= 180) : _rotateTurtle rotateAngle : return
 	if(rotateAngle > 0) : _rotateTurtle rotateAngle - 360 : return
 	_rotateTurtle rotateAngle + 360
@@ -448,15 +450,15 @@ turtleSpeed‚Ì‹t””{‚Ìwait‚ğ“ü‚ê‚é
 #defcfunc positionY
 	return double(turtlePositionY)
 #defcfunc posX
-	return positionX
+	return positionX()
 #defcfunc posY
-	return positionY
+	return positionY()
 #defcfunc towards double x_, double y_
 	return rad2deg(atan((y_ - turtlePositionY), (x_ - turtlePositionX)))
 #defcfunc xcor
-	return positionX
+	return positionX()
 #defcfunc ycor
-	return positionY
+	return positionY()
 /*
 #deffunc bgcolor int colorCode_
 	return
