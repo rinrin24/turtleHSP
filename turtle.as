@@ -25,6 +25,8 @@
 #const ROTATE_MIN_UNIT 1	//degree
 #const MAX_STAMPS 100
 #const DEFAULT_PENSIZE 10
+#const DEFAULT_SCREENSIZEX 800
+#const DEFAULT_SCREENSIZEY 600
 
 #undef goto
 #undef width
@@ -158,8 +160,8 @@ buffer 1: ãTà»äOÇÃï`âÊ
 (ãTÇÕâÒì]ÇµÇ»Ç¢)
 */
 #deffunc local _moveToNewPosition double newPositionX_, double newPositionY_
-	targetPositionX = round@(newPositionX_)
-	targetPositionY = round@(newPositionY_)
+	targetPositionX = newPositionX_
+	targetPositionY = newPositionY_
 	startPositionX = turtlePositionX
 	startPositionY = turtlePositionY
 	//logmes "tar: " + targetPositionX
@@ -179,6 +181,7 @@ buffer 1: ãTà»äOÇÃï`âÊ
 		//turtlePositionY = (targetPositionY - startPositionY) * cnt / lineLength
 		;logmes "x: " + turtlePositionX + "y: " + turtlePositionY
 		_makeLine@turtle startPositionX, startPositionY, turtlePositionX, turtlePositionY
+		;_makeLine@turtle round@(startPositionX), round@(startPositionY), round@(turtlePositionX), round@(turtlePositionY)
 		_drawAll@turtle
 		redraw 1
 		_waitTurtle@turtle
@@ -192,7 +195,7 @@ buffer 1: ãTà»äOÇÃï`âÊ
 */
 #deffunc local _rotateTurtle double angle_
 	toAngle_ = double(angle_) + turtleHeading
-	logmes toAngle_
+	;logmes toAngle_
 	moveFrequency = absf(angle_) / ROTATE_MIN_UNIT@
 	if((moveFrequency \ 1) != 0) : moveFrequency++
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
@@ -317,6 +320,7 @@ turtleSpeedÇÃãtêîî{ÇÃwaitÇì¸ÇÍÇÈ
 #deffunc initializeTurtle
 	cls
 	mainScreen = ginfo_sel
+	screen mainScreen, DEFAULT_SCREENSIZEX@, DEFAULT_SCREENSIZEY@
 	buffer BUFFER_WINDOWID@, ginfo_winx, ginfo_winy
 	celload "turtle.png", TURTLE_PICTURE_WINDOWID@
 	gsel TURTLE_PICTURE_WINDOWID@, 1
