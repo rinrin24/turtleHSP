@@ -236,26 +236,6 @@ turtleSpeedÇÃãtêîî{ÇÃwaitÇì¸ÇÍÇÈ
 #deffunc back double distance_
 	backward distance_
 	return
-#deffunc tcircle double radius_, double extent_
-	circleArcLength = M_PI * radius_ * 2 * extent_ / 360
-	centerX = turtlePositionX - radius_
-	centerY = turtlePositionY
-	setheading 90
-	curAngle = turtleHeading
-	startPositionX = turtlePositionX
-	startPositionY = turtlePositionY
-	repeat circleArcLength
-		redraw 0
-		curAngle += double(cnt) * extent_ / circleArcLength
-		turtlePositionX = centerX + radius_ * cos(curAngle)
-		turtlePositionY = centerY + radius_ * sin(curAngle)
-		turtleHeading = 90 + curAngle
-		_makeArc@turtle centerX, centerY, radius_, 0, curAngle
-		_drawAll@turtle
-		redraw 1
-		_waitTurtle@turtle
-	loop
-	return
 #deffunc clear
 	gsel BUFFER_WINDOWID@, 1
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
@@ -285,7 +265,12 @@ turtleSpeedÇÃãtêîî{ÇÃwaitÇì¸ÇÍÇÈ
 	gsel BUFFER_WINDOWID@, 1
 	preColor = ginfo_r * 255 * 255 + ginfo_g * 255 + ginfo_b
 	rgbcolor penColorCode
-	circle turtlePositionX - turtlePenSize / 2 + ginfo_winx / 2, turtlePositionY - turtlePenSize / 2 + ginfo_winy / 2, turtlePositionX + turtlePenSize / 2 + ginfo_winx / 2, turtlePositionY + turtlePenSize / 2 + ginfo_winy / 2, 1
+	if((turtlePenSize + 4) > (turtlePenSize * 2)){
+		circle turtlePositionX - (turtlePenSize + 4) / 2 + ginfo_winx / 2, turtlePositionY - (turtlePenSize + 4) / 2 + ginfo_winy / 2, turtlePositionX + (turtlePenSize + 4) / 2 + ginfo_winx / 2, turtlePositionY + (turtlePenSize + 4) / 2 + ginfo_winy / 2, 1
+	}else{
+		circle turtlePositionX - (turtlePenSize * 2) / 2 + ginfo_winx / 2, turtlePositionY - (turtlePenSize * 2) / 2 + ginfo_winy / 2, turtlePositionX + (turtlePenSize * 2) / 2 + ginfo_winx / 2, turtlePositionY + (turtlePenSize * 2) / 2 + ginfo_winy / 2, 1
+	}
+	
 	rgbcolor preColor
 	gsel mainScreen, 1
 	_drawAll@turtle
@@ -408,20 +393,22 @@ turtleSpeedÇÃãtêîî{ÇÃwaitÇì¸ÇÍÇÈ
 #deffunc setpos double x_, double y_
 	goto x_, y_
 	return
+#deffunc setposition double x_, double y_
+	goto x_, y_
+	return
 #deffunc setx double x_
 	goto x_, turtlePositionY
 	return
 #deffunc sety double y_
 	goto turtlePositionX, y_
 	return
-#deffunc setposition double x_, double y_
-	goto x_, y_
-	return
 #deffunc showturtle
 	turtleIsVisible = true@
 	_drawAll@turtle
 	return
 #deffunc speed double speed_
+	if(speed_ < 0.5) : turtleSpeed = 0 : return
+	if(speed_ > 10) : turtleSpeed = 0 : return
 	turtleSpeed = speed_
 	return
 #deffunc st
@@ -433,8 +420,30 @@ turtleSpeedÇÃãtêîî{ÇÃwaitÇì¸ÇÍÇÈ
 	turtleStamps(turtleStampNumber, 2) = (turtleHeading)
 	turtleStamps(turtleStampNumber, 3) = (penColorCode)
 	turtleStamps(turtleStampNumber, 4) = true@
+	mref _stat, 64
+	_stat = turtleStampNumber
 	turtleStampNumber ++
 	_drawAll@turtle
+	return
+#deffunc tcircle double radius_, double extent_
+	circleArcLength = M_PI * radius_ * 2 * extent_ / 360
+	centerX = turtlePositionX - radius_
+	centerY = turtlePositionY
+	setheading 90
+	curAngle = turtleHeading
+	startPositionX = turtlePositionX
+	startPositionY = turtlePositionY
+	repeat circleArcLength
+		redraw 0
+		curAngle += double(cnt) * extent_ / circleArcLength
+		turtlePositionX = centerX + radius_ * cos(curAngle)
+		turtlePositionY = centerY + radius_ * sin(curAngle)
+		turtleHeading = 90 + curAngle
+		_makeArc@turtle centerX, centerY, radius_, 0, curAngle
+		_drawAll@turtle
+		redraw 1
+		_waitTurtle@turtle
+	loop
 	return
 #deffunc up
 	penup
