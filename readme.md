@@ -4,7 +4,7 @@ python のタートルグラフィックの一部機能をHSPに移植しまし�
 バグなどがあればIssuesなどへの報告をお願いします。
 
 ## 使用方法
-turtle.as をインクルードする。
+turtle.asとturtle.pngをスクリプトファイルと同じディレクトリへコピーし、`#include "turtle.as"` と宣言する。
 
 ## 命令一覧
 ### backward, bk, back
