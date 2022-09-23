@@ -1,5 +1,11 @@
 # turtleHSP
 python のタートルグラフィックの一部機能をHSPに移植しました。
+
+バグなどがあればIssuesなどへの報告をお願いします。
+
+## 使用方法
+turtle.as をインクルードする。
+
 ## 命令一覧
 ### backward, bk, back
 ---
